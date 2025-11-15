@@ -1,9 +1,22 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import "./Keyboard.css";
 import { BsShift, BsBackspace, BsArrowReturnLeft } from "react-icons/bs";
 import { ImTab } from "react-icons/im";
 
-const ROW1 = [
+type BaseKey = {
+  base: string;
+  shifted?: string;
+};
+
+type ActionKey = {
+  action: "Backspace" | "Tab" | "Caps Lock" | "Enter" | "Shift" | "Ctrl" | "Alt";
+  icon?: ReactNode;
+  side?: "left" | "right";
+};
+
+type Key = BaseKey | ActionKey;
+
+const ROW1: Key[] = [
   { base: "`", shifted: "~" },
   { base: "1", shifted: "!" },
   { base: "2", shifted: "@" },
@@ -17,11 +30,11 @@ const ROW1 = [
   { base: "0", shifted: ")" },
   { base: "-", shifted: "_" },
   { base: "=", shifted: "+" },
-  { action: <BsBackspace /> },
+  { action: "Backspace", icon: <BsBackspace /> },
 ];
 
-const ROW2 = [
-  { action: <ImTab /> },
+const ROW2: Key[] = [
+  { action: "Tab", icon: <ImTab />  },
   { base: "q" },
   { base: "w" },
   { base: "e" },
@@ -37,7 +50,7 @@ const ROW2 = [
   { base: "\\", shifted: "|" },
 ];
 
-const ROW3 = [
+const ROW3: Key[] = [
   { action: "Caps Lock" },
   { base: "a" },
   { base: "s" },
@@ -50,11 +63,11 @@ const ROW3 = [
   { base: "l" },
   { base: ";", shifted: ":" },
   { base: "'", shifted: '"' },
-  { action: <BsArrowReturnLeft /> },
+  { action: "Enter", icon: <BsArrowReturnLeft /> },
 ];
 
-const ROW4 = [
-  { action: <BsShift />, side: "left" },
+const ROW4: Key[] = [
+  { action: "Shift", side: "left", icon: <BsShift /> },
   { base: "z" },
   { base: "x" },
   { base: "c" },
@@ -65,10 +78,10 @@ const ROW4 = [
   { base: ",", shifted: "<" },
   { base: ".", shifted: ">" },
   { base: "/", shifted: "?" },
-  { action: <BsShift />, side: "right" },
+  { action: "Shift", side: "right", icon: <BsShift /> },
 ];
 
-const ROW5 = [
+const ROW5: Key[] = [
   { action: "Ctrl" },
   { action: "Alt" },
   { base: " " }, // Space
@@ -209,12 +222,13 @@ const Keyboard = () => {
               key={index}
                 className={
                   "keyboard-key" +
-                  (keyObj.action === <BsBackspace /> ? " keyboard-key--wide" : "")
+                  ("action" in keyObj && keyObj.action === "Backspace"
+                    ? " keyboard-key--wide"
+                    : "")
                 }
               onClick={() => {
                 if ("action" in keyObj) {
-                  // Enter, Backspace, Tab, Shift… (here only Backspace)
-                  handleKeyClick(keyObj.action as string);
+                  handleKeyClick(keyObj.action as string); // "Backspace"
                 } else {
                   // Characters: numbers, symbols, etc.
                   handleCharacterKey(keyObj.base, keyObj.shifted);
@@ -222,13 +236,15 @@ const Keyboard = () => {
               }}
 
             >
-              {keyObj.shifted ? (
+              { "base" in keyObj && keyObj.shifted ? (
                 <>
                   <span className="keyboard-key--shifted">{keyObj.shifted}</span>
                   <span className="keyboard-key--base">{keyObj.base}</span>
                 </>
+              ) : "base" in keyObj ? (
+                keyObj.base
               ) : (
-                keyObj.base || keyObj.action
+                keyObj.icon ?? keyObj.action
               )}
             </div>
           ))}   
@@ -241,20 +257,22 @@ const Keyboard = () => {
               key={index}
               className="keyboard-key"
               onClick={() => {
-                if ("action" in keyObj) { 
-                  handleKeyClick(keyObj.action as string);
+                if ("action" in keyObj) {
+                  handleKeyClick(keyObj.action as string); // "Tab"
                 } else {
                   handleCharacterKey(keyObj.base, keyObj.shifted);
                 }
               }}
             >
-              {keyObj.shifted ? (
+              { "base" in keyObj && keyObj.shifted ? (
                 <>
                   <span className="keyboard-key--shifted">{keyObj.shifted}</span>
                   <span className="keyboard-key--base">{keyObj.base}</span>
                 </>
+              ) : "base" in keyObj ? (
+                keyObj.base
               ) : (
-                keyObj.base || keyObj.action
+                keyObj.icon ?? keyObj.action
               )}
             </div>
           ))}
@@ -267,25 +285,34 @@ const Keyboard = () => {
               key={index}
               className={
                 "keyboard-key" +
-                (keyObj.action === "Caps Lock" ? " keyboard-key--wide" : "") +
-                (keyObj.action === "Enter" ? " keyboard-key--wide" : "")
+                ("action" in keyObj && keyObj.action === "Caps Lock"
+                  ? " keyboard-key--wide"
+                  : "") +
+                ("action" in keyObj && keyObj.action === "Enter"
+                  ? " keyboard-key--wide"
+                  : "") +
+                ("action" in keyObj && keyObj.action === "Caps Lock" && isCaps
+                  ? " keyboard-key--active"
+                  : "")
               }
               onClick={() => {  
                 if ("action" in keyObj) {
-                  handleKeyClick(keyObj.action as string);
+                  handleKeyClick(keyObj.action as string); // "Caps Lock" nebo "Enter"
                 } else {
                   handleCharacterKey(keyObj.base, keyObj.shifted);
                 } 
               }}
             >
-              {keyObj.shifted ? (
-                <>
-                  <span className="keyboard-key--shifted">{keyObj.shifted}</span>
-                  <span className="keyboard-key--base">{keyObj.base}</span>
-                </>
-              ) : (
-                keyObj.base || keyObj.action
-              )}
+              { "base" in keyObj && keyObj.shifted ? (
+                  <>
+                    <span className="keyboard-key--shifted">{keyObj.shifted}</span>
+                    <span className="keyboard-key--base">{keyObj.base}</span>
+                  </>
+                ) : "base" in keyObj ? (
+                  keyObj.base
+                ) : (
+                  keyObj.icon ?? keyObj.action
+                )}
             </div>  
           ))}
         </div>
@@ -296,18 +323,19 @@ const Keyboard = () => {
             <div
               key={index}
                className={
-                "keyboard-key" +
-                (keyObj.action === <BsShift /> &&
-                keyObj.side === activeShiftSide
-                  ? " keyboard-key--active"
-                  : "") +
-                  ("action" in keyObj && keyObj.action === "Caps Lock" && isCaps
+                  "keyboard-key" +
+                  ("action" in keyObj && keyObj.action === "Shift"
+                    ? " keyboard-key--wide"
+                    : "") +
+                  ("action" in keyObj &&
+                  keyObj.action === "Shift" &&
+                  keyObj.side === activeShiftSide
                     ? " keyboard-key--active"
                     : "")
                 }
               onClick={() => {
                 if ("action" in keyObj) {
-                  if (keyObj.action === <BsShift />) {
+                  if (keyObj.action === "Shift") {
                     handleShiftKey(keyObj.side as "left" | "right");
                   } else {
                     handleKeyClick(keyObj.action as string);
@@ -318,14 +346,16 @@ const Keyboard = () => {
               }}
 
             >
-              {keyObj.shifted ? (
-                <>
-                  <span className="keyboard-key--shifted">{keyObj.shifted}</span>
-                  <span className="keyboard-key--base">{keyObj.base}</span>
-                </>
-              ) : (
-                keyObj.base || keyObj.action
-              )}
+              { "base" in keyObj && keyObj.shifted ? (
+            <>
+              <span className="keyboard-key--shifted">{keyObj.shifted}</span>
+              <span className="keyboard-key--base">{keyObj.base}</span>
+            </>
+          ) : "base" in keyObj ? (
+            keyObj.base
+          ) : (
+            keyObj.icon ?? keyObj.action
+          )}
             </div>
           ))}
         </div>
@@ -337,7 +367,7 @@ const Keyboard = () => {
               key={index}
               className={
                 "keyboard-key" +
-                (keyObj.base === " " 
+                ("base" in keyObj && keyObj.base === " "
                   ? " keyboard-key--extra-wide"
                   : " keyboard-key--wide")
               }
@@ -349,7 +379,11 @@ const Keyboard = () => {
                 }
               }}
             >
-              {keyObj.base === " " ? "Space" : keyObj.action }
+              {"base" in keyObj
+                ? keyObj.base === " " 
+                    ? "Space" 
+                    : keyObj.base
+                : keyObj.action}
             </div>
           ))} 
         </div>    
