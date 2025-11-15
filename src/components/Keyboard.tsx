@@ -1,0 +1,362 @@
+import { useState } from "react";
+import "./Keyboard.css";
+import { BsShift, BsBackspace, BsArrowReturnLeft } from "react-icons/bs";
+import { ImTab } from "react-icons/im";
+
+const ROW1 = [
+  { base: "`", shifted: "~" },
+  { base: "1", shifted: "!" },
+  { base: "2", shifted: "@" },
+  { base: "3", shifted: "#" },
+  { base: "4", shifted: "$" },
+  { base: "5", shifted: "%" },
+  { base: "6", shifted: "^" },
+  { base: "7", shifted: "&" },
+  { base: "8", shifted: "*" },
+  { base: "9", shifted: "(" },
+  { base: "0", shifted: ")" },
+  { base: "-", shifted: "_" },
+  { base: "=", shifted: "+" },
+  { action: <BsBackspace /> },
+];
+
+const ROW2 = [
+  { action: <ImTab /> },
+  { base: "q" },
+  { base: "w" },
+  { base: "e" },
+  { base: "r" },
+  { base: "t" },
+  { base: "y" },
+  { base: "u" },
+  { base: "i" },
+  { base: "o" },
+  { base: "p" },
+  { base: "[", shifted: "{" },
+  { base: "]", shifted: "}" },
+  { base: "\\", shifted: "|" },
+];
+
+const ROW3 = [
+  { action: "Caps Lock" },
+  { base: "a" },
+  { base: "s" },
+  { base: "d" },
+  { base: "f" },
+  { base: "g" },
+  { base: "h" },
+  { base: "j" },
+  { base: "k" },
+  { base: "l" },
+  { base: ";", shifted: ":" },
+  { base: "'", shifted: '"' },
+  { action: <BsArrowReturnLeft /> },
+];
+
+const ROW4 = [
+  { action: <BsShift />, side: "left" },
+  { base: "z" },
+  { base: "x" },
+  { base: "c" },
+  { base: "v" },
+  { base: "b" },
+  { base: "n" },
+  { base: "m" },
+  { base: ",", shifted: "<" },
+  { base: ".", shifted: ">" },
+  { base: "/", shifted: "?" },
+  { action: <BsShift />, side: "right" },
+];
+
+const ROW5 = [
+  { action: "Ctrl" },
+  { action: "Alt" },
+  { base: " " }, // Space
+  { action: "Alt" },
+  { action: "Ctrl" },
+];
+
+const Keyboard = () => {
+
+  const [inputText, setInputText] = useState("");
+  const [isCaps, setIsCaps] = useState(false);
+  const [isShift, setIsShift] = useState(false);
+  const [activeShiftSide, setActiveShiftSide] =
+  useState<"left" | "right" | null>(null);
+
+  // 🔹 Helper to check if a character is a letter
+   const isLetter = (ch: string): boolean => {
+    return ch.length === 1 && ch.toLowerCase() !== ch.toUpperCase();
+  };
+
+  // 🔹 Character keys (letters, numbers, symbols)
+  const handleCharacterKey = (base: string, shifted?: string) => {
+    let charToAdd = base;
+
+    const shiftOn = isShift;
+    const capsOn = isCaps;
+
+    if (isLetter(base)) {
+      // 🔤 LETTES 
+      // Caps XOR Shift → choice of uppercase/lowercase
+      const shouldUppercase =
+        (capsOn && !shiftOn) || (!capsOn && shiftOn);
+
+      charToAdd = shouldUppercase
+        ? base.toUpperCase()
+        : base.toLowerCase();
+    } else {
+      // 🔢 NUMBERS / SYMBOLS– Caps do not affect them, Shift switch base/shifted
+      if (shiftOn && shifted) {
+        charToAdd = shifted;
+      } else {
+        charToAdd = base;
+      }
+    }
+
+    setInputText(prev => prev + charToAdd);
+
+    // Shift is one-time use
+    if (isShift) {
+      setIsShift(false);
+      setActiveShiftSide(null);  
+    }
+  };
+
+  // 🔹 Shift
+  const handleShiftKey = (side: "left" | "right") => {
+    setIsShift(prev => !prev);
+    setActiveShiftSide(prev => (prev === side ? null : side));
+  };
+
+  // 🔹 Space
+  const handleSpaceKey = () => {
+    setInputText(prev => prev + " "); 
+  };
+
+  // 🔹 Enter
+  const handleEnterKey = () => {
+    setInputText(prev => prev + "\n");
+  };
+
+  // 🔹 Tab 
+  const handleTabKey = () => {
+    setInputText(prev => prev + "\t");
+  };
+
+  // 🔹 Backspace
+  const handleBackspaceKey = () => {
+    setInputText(prev => prev.slice(0, -1));
+  };
+
+  // 🔹 Caps Lock
+  const handleCapsLockKey = () => {
+    setIsCaps(prev => !prev);
+  };
+
+  // 🔹 Normal letters / numbers / symbols
+  const handleRegularKey = (key: string) => {
+    handleCharacterKey(key);
+  };
+
+
+  // 🔹 The main key router
+  const handleKeyClick = (key: string) => {
+    if (key === "Enter") {
+      handleEnterKey();
+    } else if (
+      key === "Ctrl" ||   
+      key === "Alt" ||
+      key === "Delete" ||
+      key === "ArrowUp" ||
+      key === "ArrowDown" ||
+      key === "ArrowLeft" ||
+      key === "ArrowRight" ||
+      key === "<" ||
+      key === ">"
+    ) {
+      // Do nothing for these keys for now
+    } else if (key === "Space") {
+      handleSpaceKey();
+    } else if (key === "Caps Lock") {
+      handleCapsLockKey();
+    // } else if (key === "Shift") {
+    //   // Determine which Shift key was pressed
+    //   const side = activeShiftSide === "left" ? "right" : "left";
+    //   handleShiftKey(side);
+    } else if (key === "Tab") {
+      handleTabKey();
+    } else if (key === "Backspace") {
+      handleBackspaceKey();
+    } else {
+      handleRegularKey(key);
+    }
+  };
+
+  return (
+    <div className="keyboard-container">
+      <textarea
+        className="keyboard-display"
+        value={inputText}
+        onChange={() => {}}
+      />
+      <div className="container">
+
+        {/* ROW1 */}
+        <div className="keyboard-row">
+          {ROW1.map((keyObj, index) => (
+            <div
+              key={index}
+                className={
+                  "keyboard-key" +
+                  (keyObj.action === <BsBackspace /> ? " keyboard-key--wide" : "")
+                }
+              onClick={() => {
+                if ("action" in keyObj) {
+                  // Enter, Backspace, Tab, Shift… (here only Backspace)
+                  handleKeyClick(keyObj.action as string);
+                } else {
+                  // Characters: numbers, symbols, etc.
+                  handleCharacterKey(keyObj.base, keyObj.shifted);
+                }
+              }}
+
+            >
+              {keyObj.shifted ? (
+                <>
+                  <span className="keyboard-key--shifted">{keyObj.shifted}</span>
+                  <span className="keyboard-key--base">{keyObj.base}</span>
+                </>
+              ) : (
+                keyObj.base || keyObj.action
+              )}
+            </div>
+          ))}   
+        </div>
+
+        {/* ROW2 */}
+        <div className="keyboard-row">
+          {ROW2.map((keyObj, index) => (
+            <div
+              key={index}
+              className="keyboard-key"
+              onClick={() => {
+                if ("action" in keyObj) { 
+                  handleKeyClick(keyObj.action as string);
+                } else {
+                  handleCharacterKey(keyObj.base, keyObj.shifted);
+                }
+              }}
+            >
+              {keyObj.shifted ? (
+                <>
+                  <span className="keyboard-key--shifted">{keyObj.shifted}</span>
+                  <span className="keyboard-key--base">{keyObj.base}</span>
+                </>
+              ) : (
+                keyObj.base || keyObj.action
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* ROW3 */}
+        <div className="keyboard-row">
+          {ROW3.map((keyObj, index) => (
+            <div    
+              key={index}
+              className={
+                "keyboard-key" +
+                (keyObj.action === "Caps Lock" ? " keyboard-key--wide" : "") +
+                (keyObj.action === "Enter" ? " keyboard-key--wide" : "")
+              }
+              onClick={() => {  
+                if ("action" in keyObj) {
+                  handleKeyClick(keyObj.action as string);
+                } else {
+                  handleCharacterKey(keyObj.base, keyObj.shifted);
+                } 
+              }}
+            >
+              {keyObj.shifted ? (
+                <>
+                  <span className="keyboard-key--shifted">{keyObj.shifted}</span>
+                  <span className="keyboard-key--base">{keyObj.base}</span>
+                </>
+              ) : (
+                keyObj.base || keyObj.action
+              )}
+            </div>  
+          ))}
+        </div>
+
+        {/* ROW4 */}
+        <div className="keyboard-row">
+          {ROW4.map((keyObj, index) => (
+            <div
+              key={index}
+               className={
+                "keyboard-key" +
+                (keyObj.action === <BsShift /> &&
+                keyObj.side === activeShiftSide
+                  ? " keyboard-key--active"
+                  : "") +
+                  ("action" in keyObj && keyObj.action === "Caps Lock" && isCaps
+                    ? " keyboard-key--active"
+                    : "")
+                }
+              onClick={() => {
+                if ("action" in keyObj) {
+                  if (keyObj.action === <BsShift />) {
+                    handleShiftKey(keyObj.side as "left" | "right");
+                  } else {
+                    handleKeyClick(keyObj.action as string);
+                  }
+                } else {
+                  handleCharacterKey(keyObj.base, keyObj.shifted);
+                }
+              }}
+
+            >
+              {keyObj.shifted ? (
+                <>
+                  <span className="keyboard-key--shifted">{keyObj.shifted}</span>
+                  <span className="keyboard-key--base">{keyObj.base}</span>
+                </>
+              ) : (
+                keyObj.base || keyObj.action
+              )}
+            </div>
+          ))}
+        </div>
+
+         {/* ROW5 */}
+        <div className="keyboard-row">
+          {ROW5.map((keyObj, index) => (
+            <div
+              key={index}
+              className={
+                "keyboard-key" +
+                (keyObj.base === " " 
+                  ? " keyboard-key--extra-wide"
+                  : " keyboard-key--wide")
+              }
+              onClick={() => {  
+                if ("action" in keyObj) {
+                  handleKeyClick(keyObj.action as string);
+                } else {
+                  handleCharacterKey(keyObj.base);
+                }
+              }}
+            >
+              {keyObj.base === " " ? "Space" : keyObj.action }
+            </div>
+          ))} 
+        </div>    
+
+      </div>
+    </div>
+  );
+};
+
+export default Keyboard;
