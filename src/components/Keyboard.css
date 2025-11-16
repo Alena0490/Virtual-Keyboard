@@ -1,67 +1,180 @@
 .keyboard-container {
+    position: relative;
     width: 100%;
     height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 2rem 1rem;
+    background: radial-gradient(circle at top, #1b1220 0, var(--bg-color) 55%);
+    box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.9);
+    perspective: 1200px; 
 }
 
 .keyboard-display {
     width: 80%;
     max-width: 950px;
     height: 120px;
-    margin: 0 auto;
+    margin: 0 auto 1.25rem auto;
+    padding: 0.75rem 1rem;
     overflow-y: auto;
-    margin-block: 2rem;
-    font-size: 16px;
-    padding: 10px;
-    border: 1px solid #0add74;
-    border-radius: 4px;
+    background: var(--bg-color-light);
+    color: var(--text);
+    border-radius: 12px;
+    border: 1px solid #2b2b33;
+    font-size: 1rem;
+    box-shadow:
+        0 0 12px rgba(0, 0, 0, 0.7),
+        0 0 10px rgba(0, 0, 0, 0.9);
     resize: none;
 }
 
+.keyboard-display:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
 .container {
+    position: relative;
     width: 80%;
     max-width: 950px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 0.35rem;
+    background: linear-gradient(to bottom, var(--panel-bg), #0b0b10);
+    border-radius: 18px;
+    padding: 1.5rem;
+    border: 1px solid var(--panel-border);
+    box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.8),
+        0 0 25px rgba(0, 0, 0, 0.9);
+    transform-style: preserve-3d;      /* ⬅ 3D */
+    transform: rotateX(1deg); 
+}
+
+.container::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
 }
 
 .keyboard-row {
+    position: relative;
     width: 100%;
     display: flex;
     flex-wrap: nowrap;
     justify-content: center;
+    gap: 0.25rem;
     margin-bottom: 5px;
+    z-index: 10;
 }
 
 .keyboard-key {
+    position: relative;
     display: flex;
     flex-direction: column; 
     align-items: center;
     justify-content: center;
     flex: 1 0 0;
-    /* min-width: 40px; */
-    height: 50px; 
-    margin: 0 2px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--key-border);
+    background: linear-gradient(to bottom, var(--key-bg-top), var(--key-bg-bottom));
+    color: var(--text);
+    height: 52px; 
+    min-width: 42px;
+    padding: 0.15rem 0.4rem;
+    outline: none;
+    border-radius: 8px;
+    background-color: var(--bg-color-light);
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     cursor: pointer;
+    transform: translate3d(0, 0, 26px); /* ⬅ 3D */
+     box-shadow:
+        0 4px 0 #050507,
+		5px 5px 10px var(--key-shadow),
+		2px 2px  6px var(--key-shadow),
+        -1px -1px 0px hsl(0, 0%, 100%, 0.4),
+        -2px -2px 0px hsl(0, 0%, 100%, 0.4),
+        -3px -3px 0px hsl(0, 0%, 100%, 0.4),
+        -4px -4px 0px hsl(0, 0%, 100%, 0.4),
+        -5px -5px 0px hsl(0, 0%, 100%, 0.4);
+
+    transition:
+        transform 120ms ease-out,
+        box-shadow 120ms ease-out,
+        background 120ms ease-out,
+        border-color 120ms ease-out;
 }
 
+.keyboard-key:hover {
+  transform: translate3d(0, 0, 0.3px); /* ⬅ 3D */
+  border-color: var(--primary-color-transparent);
+      box-shadow:
+        0 4px 0 #050507,
+		5px 5px 10px var(--key-shadow),
+		2px 2px  6px var(--key-shadow),
+        -1px -1px 0px var(--primary-color-dark-transparent),
+        -2px -2px 0px var(--primary-color-dark-transparent),
+        -3px -3px 0px var(--primary-color-dark-transparent),
+        -4px -4px 0px var(--primary-color-dark-transparent),
+        -5px -5px 0px var(--primary-color-dark-transparent)
+}
+
+.keyboard-key:hover::before {
+    position: absolute;
+    content: "";
+    box-shadow: 
+        -6px -6px 15px var(--primary-color-light);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.keyboard-key:active {
+  transform: translateY(-3px) translateX(-2px) scale(0.98);  /* o kousek dolů + lehce zploštit */
+  box-shadow:
+    0 2px 0 #050507,                        /* kratší “schod” – klávesa blíž podložce */
+    3px 3px 8px rgba(0, 0, 0, 0.8),         /* tmavší stín pod klávesou */
+    0 0 6px var(--primary-color-transparent), /* slabší glow než na hover */
+    inset 0 1px 0 rgba(255, 255, 255, 0.25); /* jemný lesk nahoře */
+}
+
+
+.keyboard-key:focus-visible {
+  transform: translateY(0) scale(1.02);
+  box-shadow:
+    0 0 0 1px #000,
+    0 0 0 2px var(--primary-color-transparent),
+    0 0 14px var(--key-glow),
+    0 4px 10px rgba(0, 0, 0, 0.9),
+    5px 5px 10px var(--key-shadow),
+	2px 2px  6px var(--key-shadow),
+        -1px -1px 0px var(--primary-color-transparent),
+        -2px -2px 0px var(--primary-color-transparent),
+        -3px -3px 0px var(--primary-color-transparent),
+        -4px -4px 0px var(--primary-color-transparent),
+        -5px -5px 0px var(--primary-color-transparent);
+}
+
+
+
 .keyboard-key--wide {
-    flex: 1.5 0 0;    
+    flex: 1.5 0 0;  
+    min-width: 76px;  
 }
 
 .keyboard-key--extra-wide {
     flex: 5 0 0; /* for Space key */     
+     min-width: 220px;
 }
 
 .keyboard-key--shifted {
-    font-size: 0.7rem;   
-    opacity: 0.8;
+    font-size: 0.65rem;
+    opacity: 0.78;
+    align-self: flex-start;
+    transform: translateY(-2px);
 }
 
 .keyboard-key--base {
@@ -69,5 +182,15 @@
 }     
 
 .keyboard-key--active {
-    background-color: #574db4;
+    background: radial-gradient(circle at top, var(--primary-color-dark), var(--key-bg-bottom));
+    border-color: var(--primary-color-dark);
+    box-shadow:
+        0 4px 0 #050507,
+		5px 5px 10px var(--key-shadow),
+		2px 2px  6px var(--key-shadow),
+        -1px -1px 0px var(--primary-color-dark-transparent),
+        -2px -2px 0px var(--primary-color-dark-transparent),
+        -3px -3px 0px var(--primary-color-dark-transparent),
+        -4px -4px 0px var(--primary-color-dark-transparent),
+        -5px -5px 0px var(--primary-color-dark-transparent)
 }

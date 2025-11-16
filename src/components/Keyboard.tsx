@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useRef, useState, useEffect, type ReactNode } from "react";
 import "./Keyboard.css";
 import { BsShift, BsBackspace, BsArrowReturnLeft } from "react-icons/bs";
 import { ImTab } from "react-icons/im";
@@ -93,9 +93,17 @@ const Keyboard = () => {
 
   const [inputText, setInputText] = useState("");
   const [isCaps, setIsCaps] = useState(false);
-  const [isShift, setIsShift] = useState(false);
-  const [activeShiftSide, setActiveShiftSide] =
-  useState<"left" | "right" | null>(null);
+  const [shiftState, setShiftState] = useState<{
+    active: boolean;
+    side: "left" | "right" | null;
+  }>({ active: false, side: null });
+
+  //🔹 Textarea
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
 
   // 🔹 Helper to check if a character is a letter
    const isLetter = (ch: string): boolean => {
@@ -106,11 +114,11 @@ const Keyboard = () => {
   const handleCharacterKey = (base: string, shifted?: string) => {
     let charToAdd = base;
 
-    const shiftOn = isShift;
+    const shiftOn = shiftState.active;  
     const capsOn = isCaps;
 
     if (isLetter(base)) {
-      // 🔤 LETTES 
+      // 🔤 LETTERS 
       // Caps XOR Shift → choice of uppercase/lowercase
       const shouldUppercase =
         (capsOn && !shiftOn) || (!capsOn && shiftOn);
@@ -130,17 +138,19 @@ const Keyboard = () => {
     setInputText(prev => prev + charToAdd);
 
     // Shift is one-time use
-    if (isShift) {
-      setIsShift(false);
-      setActiveShiftSide(null);  
+    if (shiftState.active) {
+      setShiftState({ active: false, side: null });
     }
   };
 
   // 🔹 Shift
   const handleShiftKey = (side: "left" | "right") => {
-    setIsShift(prev => !prev);
-    setActiveShiftSide(prev => (prev === side ? null : side));
-  };
+  setShiftState(prev => 
+    (prev.active && prev.side === side)
+      ? { active: false, side: null }
+      : { active: true, side: side }
+  );
+};
 
   // 🔹 Space
   const handleSpaceKey = () => {
@@ -168,9 +178,9 @@ const Keyboard = () => {
   };
 
   // 🔹 Normal letters / numbers / symbols
-  const handleRegularKey = (key: string) => {
-    handleCharacterKey(key);
-  };
+  // const handleRegularKey = (key: string) => {
+  //   handleCharacterKey(key);
+  // };
 
 
   // 🔹 The main key router
@@ -184,25 +194,17 @@ const Keyboard = () => {
       key === "ArrowUp" ||
       key === "ArrowDown" ||
       key === "ArrowLeft" ||
-      key === "ArrowRight" ||
-      key === "<" ||
-      key === ">"
+      key === "ArrowRight"
     ) {
       // Do nothing for these keys for now
-    } else if (key === "Space") {
+    } else if (key === " ") {  
       handleSpaceKey();
     } else if (key === "Caps Lock") {
       handleCapsLockKey();
-    // } else if (key === "Shift") {
-    //   // Determine which Shift key was pressed
-    //   const side = activeShiftSide === "left" ? "right" : "left";
-    //   handleShiftKey(side);
     } else if (key === "Tab") {
       handleTabKey();
     } else if (key === "Backspace") {
       handleBackspaceKey();
-    } else {
-      handleRegularKey(key);
     }
   };
 
@@ -211,14 +213,14 @@ const Keyboard = () => {
       <textarea
         className="keyboard-display"
         value={inputText}
-        onChange={() => {}}
+        readOnly
       />
       <div className="container">
 
         {/* ROW1 */}
         <div className="keyboard-row">
           {ROW1.map((keyObj, index) => (
-            <div
+            <button
               key={index}
                 className={
                   "keyboard-key" +
@@ -246,14 +248,14 @@ const Keyboard = () => {
               ) : (
                 keyObj.icon ?? keyObj.action
               )}
-            </div>
+            </button>
           ))}   
         </div>
 
         {/* ROW2 */}
         <div className="keyboard-row">
           {ROW2.map((keyObj, index) => (
-            <div
+            <button
               key={index}
               className="keyboard-key"
               onClick={() => {
@@ -274,14 +276,14 @@ const Keyboard = () => {
               ) : (
                 keyObj.icon ?? keyObj.action
               )}
-            </div>
+            </button>
           ))}
         </div>
 
         {/* ROW3 */}
         <div className="keyboard-row">
           {ROW3.map((keyObj, index) => (
-            <div    
+            <button    
               key={index}
               className={
                 "keyboard-key" +
@@ -313,14 +315,14 @@ const Keyboard = () => {
                 ) : (
                   keyObj.icon ?? keyObj.action
                 )}
-            </div>  
+            </button>  
           ))}
         </div>
 
         {/* ROW4 */}
         <div className="keyboard-row">
           {ROW4.map((keyObj, index) => (
-            <div
+            <button
               key={index}
                className={
                   "keyboard-key" +
@@ -329,20 +331,21 @@ const Keyboard = () => {
                     : "") +
                   ("action" in keyObj &&
                   keyObj.action === "Shift" &&
-                  keyObj.side === activeShiftSide
+                  keyObj.side === shiftState.side 
                     ? " keyboard-key--active"
                     : "")
                 }
               onClick={() => {
-                if ("action" in keyObj) {
-                  if (keyObj.action === "Shift") {
-                    handleShiftKey(keyObj.side as "left" | "right");
-                  } else {
-                    handleKeyClick(keyObj.action as string);
-                  }
-                } else {
-                  handleCharacterKey(keyObj.base, keyObj.shifted);
-                }
+  if ("action" in keyObj) {
+    if (keyObj.action === "Shift") {
+      handleShiftKey(keyObj.side as "left" | "right");
+    } else {
+      handleKeyClick(keyObj.action as string);
+    }
+  } else {
+    handleCharacterKey(keyObj.base, keyObj.shifted);
+  }
+
               }}
 
             >
@@ -356,14 +359,14 @@ const Keyboard = () => {
           ) : (
             keyObj.icon ?? keyObj.action
           )}
-            </div>
+            </button>
           ))}
         </div>
 
          {/* ROW5 */}
         <div className="keyboard-row">
           {ROW5.map((keyObj, index) => (
-            <div
+            <button
               key={index}
               className={
                 "keyboard-key" +
@@ -375,7 +378,7 @@ const Keyboard = () => {
                 if ("action" in keyObj) {
                   handleKeyClick(keyObj.action as string);
                 } else {
-                  handleCharacterKey(keyObj.base);
+                  handleCharacterKey(keyObj.base, keyObj.shifted);  // ← přidej druhý parametr
                 }
               }}
             >
@@ -384,7 +387,7 @@ const Keyboard = () => {
                     ? "Space" 
                     : keyObj.base
                 : keyObj.action}
-            </div>
+            </button>
           ))} 
         </div>    
 
