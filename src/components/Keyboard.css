@@ -87,20 +87,23 @@
     padding: 0.15rem 0.4rem;
     outline: none;
     border-radius: 8px;
-    background-color: var(--bg-color-light);
     border: 1px solid var(--color-border);
     border-radius: 4px;
     cursor: pointer;
+    z-index: 10;
     transform: translate3d(0, 0, 26px); /* ⬅ 3D */
-     box-shadow:
+      box-shadow:
+      /* Spodní část */
         0 4px 0 #050507,
-		5px 5px 10px var(--key-shadow),
-		2px 2px  6px var(--key-shadow),
-        -1px -1px 0px hsl(0, 0%, 100%, 0.4),
-        -2px -2px 0px hsl(0, 0%, 100%, 0.4),
-        -3px -3px 0px hsl(0, 0%, 100%, 0.4),
-        -4px -4px 0px hsl(0, 0%, 100%, 0.4),
-        -5px -5px 0px hsl(0, 0%, 100%, 0.4);
+        5px 5px 10px var(--key-shadow),
+        2px 2px  6px var(--key-shadow),
+
+    /* 5px hrana nahoře + vlevo */
+    -1px -1px 0 hsla(0, 0%, 100%, 0.30),
+    -2px -2px 0 hsla(0, 0%, 100%, 0.22),
+    -3px -3px 0 hsla(0, 0%, 100%, 0.16),
+    -4px -4px 0 hsla(0, 0%, 100%, 0.10),
+    -5px -5px 0 hsla(0, 0%, 100%, 0.06);
 
     transition:
         transform 120ms ease-out,
@@ -110,37 +113,58 @@
 }
 
 .keyboard-key:hover {
-  transform: translate3d(0, 0, 0.3px); /* ⬅ 3D */
+  transform: translate3d(0, 0, 0.3px);
   border-color: var(--primary-color-transparent);
-      box-shadow:
-        0 4px 0 #050507,
-		5px 5px 10px var(--key-shadow),
-		2px 2px  6px var(--key-shadow),
-        -1px -1px 0px var(--primary-color-dark-transparent),
-        -2px -2px 0px var(--primary-color-dark-transparent),
-        -3px -3px 0px var(--primary-color-dark-transparent),
-        -4px -4px 0px var(--primary-color-dark-transparent),
-        -5px -5px 0px var(--primary-color-dark-transparent)
+
+  box-shadow:
+    0 1px 0 #050507,
+    5px 5px 12px var(--key-shadow),
+    2px 2px  8px var(--key-shadow),
+    /* key glow */
+    0 0 10px var(--primary-color-transparent),
+    0 0 20px var(--primary-color-darkest-transparent);
+z-index: 1;
 }
 
 .keyboard-key:hover::before {
     position: absolute;
     content: "";
-    box-shadow: 
-        -6px -6px 15px var(--primary-color-light);
-    z-index: -1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;    
+    box-shadow:
+        -1px -1px 0 var(--primary-color-darkest-transparent),
+        -2px -2px 0 var(--primary-color-darkest-transparent),
+        -3px -3px 0 var(--primary-color-darkest-transparent),
+        -4px -4px 0 var(--primary-color-darkest-transparent),
+        -3px -3px 2px var(--primary-color-light-transparent),
+        -4px -4px 5px var(--primary-color-transparent),
+        -2px -5px 10px var(--primary-color),
+        -3px -3px 30px var(--primary-color-light-transparent),
+        -3px -3px 60px var(--primary-color-light-transparentx);
+    z-index: -999;
     pointer-events: none;
+    border-radius: 2px;
 }
 
 .keyboard-key:active {
-  transform: translateY(-3px) translateX(-2px) scale(0.98);  /* o kousek dolů + lehce zploštit */
-  box-shadow:
-    0 2px 0 #050507,                        /* kratší “schod” – klávesa blíž podložce */
-    3px 3px 8px rgba(0, 0, 0, 0.8),         /* tmavší stín pod klávesou */
-    0 0 6px var(--primary-color-transparent), /* slabší glow než na hover */
-    inset 0 1px 0 rgba(255, 255, 255, 0.25); /* jemný lesk nahoře */
-}
+  transform: translateY(2px) scale(0.98);
 
+  box-shadow:
+    /* kratší nožička */
+    0 2px 0 #050507,
+    3px 3px 8px var(--key-shadow),
+    1px 1px 4px var(--key-shadow),
+
+    /* hrana stále 5px, ale mírně tlumená */
+    -1px -1px 0 hsla(0, 0%, 100%, 0.24),
+    -2px -2px 0 hsla(0, 0%, 100%, 0.18),
+    -3px -3px 0 hsla(0, 0%, 100%, 0.12),
+    -4px -4px 0 hsla(0, 0%, 100%, 0.10),
+    -5px -5px 0 hsla(0, 0%, 100%, 0.08),
+    -6px -6px 0 hsla(0, 0%, 100%, 0.06);
+}
 
 .keyboard-key:focus-visible {
   transform: translateY(0) scale(1.02);
@@ -182,8 +206,8 @@
 }     
 
 .keyboard-key--active {
-    background: radial-gradient(circle at top, var(--primary-color-dark), var(--key-bg-bottom));
-    border-color: var(--primary-color-dark);
+    background: radial-gradient(circle at top, var(--primary-color), var(--key-bg-bottom));
+    border-color: var(--primary-color-transparent);
     box-shadow:
         0 4px 0 #050507,
 		5px 5px 10px var(--key-shadow),
@@ -191,6 +215,6 @@
         -1px -1px 0px var(--primary-color-dark-transparent),
         -2px -2px 0px var(--primary-color-dark-transparent),
         -3px -3px 0px var(--primary-color-dark-transparent),
-        -4px -4px 0px var(--primary-color-dark-transparent),
+        -4px -4px 0px var(--primary-color-transparent),
         -5px -5px 0px var(--primary-color-dark-transparent)
 }
